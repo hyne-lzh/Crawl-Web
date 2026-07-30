@@ -15,6 +15,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TaskID
+from rich.text import Text
+from rich.rule import Rule
+from rich import box
+
 
 class DataWasher:
     """数据清洗器"""
@@ -61,6 +69,7 @@ class DataWasher:
         self.vectorizer: TfidfVectorizer | None = None
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.console = Console()
 
     # --------------------- 接收数据 ---------------------
 
@@ -256,37 +265,71 @@ class DataWasher:
         :param query: 原始搜索关键词
         :return: 清洗后的结果
         """
-        print("[wash] 开始清洗数据...")
+        self.console.print(Panel.fit(
+            f"[bold cyan]开始清洗数据[/bold cyan]\n查询关键词: [yellow]{query}[/yellow]",
+            border_style="cyan",
+        ))
 
-        # 1. 过滤广告
-        print("  [1/3] 广告检测与过滤...")
-        self.filter_ads()
-        total_before = sum(len(d.get("results", [])) for d in self.cleaned_data)
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            console=self.console,
+        ) as progress:
+            # 1. 过滤广告
+            task1 = progress.add_task("[cyan]广告检测与过滤...", total=100)
+            self.filter_ads()
+            total_before = sum(len(d.get("results", [])) for d in self.cleaned_data)
+            progress.update(task1, completed=100)
 
-        # 2. 去重
-        print("  [2/3] 相似结果去重...")
-        self.deduplicate()
-        total_after = sum(len(d.get("results", [])) for d in self.cleaned_data)
+            # 2. 去重
+            task2 = progress.add_task("[cyan]相似结果去重...", total=100)
+            self.deduplicate()
+            total_after = sum(len(d.get("results", [])) for d in self.cleaned_data)
+            progress.update(task2, completed=100)
 
-        # 3. 相关性排序
-        print("  [3/3] 相关性排序...")
-        self.rank_by_relevance(query)
+            # 3. 相关性排序
+            task3 = progress.add_task("[cyan]相关性排序...", total=100)
+            self.rank_by_relevance(query)
+            progress.update(task3, completed=100)
 
-        print(f"  [完成] 清洗前 {len(self.extracted_data)} 个引擎，"
-              f"清洗后保留 {total_after} 条结果（去重前 {total_before} 条）")
+        # 统计面板
+        removed = total_before - total_after
+        stats = Text()
+        stats.append(f"引擎数: ", style="dim")
+        stats.append(f"{len(self.extracted_data)}", style="bold cyan")
+        stats.append(f"  |  清洗后: ", style="dim")
+        stats.append(f"{total_after} 条结果", style="bold green")
+        if removed > 0:
+            stats.append(f"  |  已移除: ", style="dim")
+            stats.append(f"{removed} 条", style="bold yellow")
+        self.console.print(Panel(stats, border_style="green"))
+
         return self.cleaned_data
 
     # --------------------- 展示 ---------------------
 
-    def display(self) -> None:
-        """在终端展示清洗后的结果给用户"""
-        if not self.cleaned_data:
-            print("无结果可展示")
-            return
+    # 引擎颜色映射
+    ENGINE_COLORS: dict[str, str] = {
+        "百度": "bright_blue",
+        "Google": "bright_green",
+        "必应搜索": "bright_cyan",
+        "知乎搜索": "bright_magenta",
+        "搜狗微信搜索": "yellow",
+    }
+    _DEFAULT_ENGINE_COLOR = "bright_white"
 
-        print("\n" + "=" * 70)
-        print("                    搜索结果")
-        print("=" * 70)
+    @classmethod
+    def _engine_color(cls, name: str) -> str:
+        """根据引擎名返回对应颜色"""
+        return cls.ENGINE_COLORS.get(name, cls._DEFAULT_ENGINE_COLOR)
+
+    def display(self) -> None:
+        """使用 Rich Table 在终端展示清洗后的结果"""
+        if not self.cleaned_data:
+            self.console.print(Panel("[yellow]无结果可展示[/yellow]", border_style="yellow"))
+            return
 
         total = 0
         for engine_data in self.cleaned_data:
@@ -294,24 +337,49 @@ class DataWasher:
             results = engine_data.get("results", [])
             if not results:
                 continue
-            print(f"\n  [{engine_name}] ({len(results)} 条)")
-            print("  " + "-" * 60)
+
+            engine_color = self._engine_color(engine_name)
+
+            # 引擎标题
+            self.console.print(Rule(
+                f"[bold {engine_color}]{engine_name}[/bold {engine_color}] "
+                f"[dim]({len(results)} 条)[/dim]",
+                style=engine_color,
+            ))
+
+            # 结果表格
+            table = Table(
+                show_header=True,
+                header_style=f"bold {engine_color}",
+                box=box.ROUNDED,
+                border_style=engine_color,
+                expand=True,
+            )
+            table.add_column("#", width=3, justify="right", style="dim")
+            table.add_column("标题", style="bold white", no_wrap=False, ratio=3)
+            table.add_column("链接", style="blue", no_wrap=False, ratio=3)
+            table.add_column("摘要", style="dim italic", no_wrap=False, ratio=4)
+
             for i, item in enumerate(results, 1):
                 title = item.get("title", "无标题")
                 url = item.get("url", "")
                 snippet = item.get("snippet", "")
-                print(f"  {i:2d}. {title}")
-                if url:
-                    print(f"       {url}")
-                if snippet:
-                    # 截断过长的摘要
-                    display_snippet = snippet[:120] + "..." if len(snippet) > 120 else snippet
-                    print(f"       {display_snippet}")
-                print()
-                total += 1
+                # 截断过长摘要
+                if len(snippet) > 100:
+                    snippet = snippet[:100] + "..."
 
-        print("-" * 70)
-        print(f"  共 {total} 条结果\n")
+                table.add_row(
+                    str(i),
+                    title,
+                    url,
+                    snippet,
+                )
+
+            self.console.print(table)
+            total += len(results)
+
+        # 底部统计
+        self.console.print(Rule(f"[bold]共 {total} 条结果[/bold]", style="bright_black"))
 
     # --------------------- 保存 ---------------------
 
@@ -336,7 +404,7 @@ class DataWasher:
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(output_data, f, ensure_ascii=False, indent=2)
 
-        print(f"[保存] JSON 已保存至: {filepath}")
+        self.console.print(f"  [green][OK][/green] JSON 已保存至: [bold]{filepath}[/bold]")
         return str(filepath)
 
     def save_csv(self, filename: str | None = None) -> str:
@@ -364,7 +432,7 @@ class DataWasher:
                         item.get("snippet", ""),
                     ])
 
-        print(f"[保存] CSV 已保存至: {filepath}")
+        self.console.print(f"  [green][OK][/green] CSV 已保存至: [bold]{filepath}[/bold]")
         return str(filepath)
 
     # --------------------- 主入口 ---------------------
