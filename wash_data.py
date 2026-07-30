@@ -103,15 +103,17 @@ class DataWasher:
         """
         使用 sklearn 训练广告检测模型
         TF-IDF 向量化 + LogisticRegression 分类器
+        使用 char 级别 n-gram 以适配中文（无空格分词的语言）
         """
         # 构造训练数据
         X_texts = self.AD_CORPUS + self.NORMAL_CORPUS
         y = [1] * len(self.AD_CORPUS) + [0] * len(self.NORMAL_CORPUS)
 
-        # TF-IDF 向量化
+        # TF-IDF 向量化 — analyzer='char' 对中文适配性更好
         self.vectorizer = TfidfVectorizer(
-            max_features=500,
-            ngram_range=(1, 3),
+            analyzer="char",
+            max_features=800,
+            ngram_range=(2, 5),
             sublinear_tf=True,
         )
         X = self.vectorizer.fit_transform(X_texts)
@@ -139,7 +141,7 @@ class DataWasher:
 
         # 1. 规则检测
         if self._rule_based_ad_check(text):
-            ad_score += 3
+            ad_score += 4
 
         # 2. URL 特征检测（广告链接常有 query 参数特征）
         url = item.get("url", "")
