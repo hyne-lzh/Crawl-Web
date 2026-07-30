@@ -33,10 +33,12 @@ class DataExtractor:
                          "div.c-span-last, div.c-row",
         },
         "必应搜索": {
-            "container": "li.b_algo",
-            "title":     "h2 a",
-            "url":       "h2 a",
-            "snippet":   "div.b_caption p, p.b_lineclamp2, p.b_lineclamp4",
+            "container": "li.b_algo, li.b_ans, ol#b_results > li, "
+                         "div.b_algo, div.b_title",
+            "title":     "h2 a, div.b_tpcn a, a[target='_blank']",
+            "url":       "h2 a, div.b_tpcn a",
+            "snippet":   "div.b_caption p, p.b_lineclamp2, p.b_lineclamp4, "
+                         "div.b_snippet p, div.b_caption span",
         },
         "Google": {
             "container": "div.g, div[data-sokoban-container], div.MjjYud",
@@ -57,17 +59,21 @@ class DataExtractor:
             "snippet":   "p.txt-info, div.news-txt, p[class*='desc']",
         },
         "头条搜索": {
-            "container": "div.result-item, div.s-result, div.soResult",
-            "title":     "h2 a, h3 a, a[class*='title']",
+            "container": "div.result-item, div.s-result, div.soResult, "
+                         "div[class*='result'], div[class*='Result']",
+            "title":     "h2 a, h3 a, a[class*='title'], a.title, "
+                         "a[class*='Title']",
             "url":       "h2 a, h3 a",
             "snippet":   "div.content, p.abstract, div[class*='abstract'], "
-                         "div[class*='desc']",
+                         "div[class*='desc'], div[class*='Desc']",
         },
         "开发者搜索": {
-            "container": "div.result, div.search-result",
-            "title":     "h3 a, h2 a",
+            "container": "div.result, div.search-result, div[class*='result'], "
+                         "div[class*='card'], article",
+            "title":     "h3 a, h2 a, a.title, a[class*='title']",
             "url":       "h3 a, h2 a",
-            "snippet":   "div.abstract, p.desc, div.summary",
+            "snippet":   "div.abstract, p.desc, div.summary, div[class*='desc'], "
+                         "div[class*='content']",
         },
         "DuckDuckGo": {
             "container": "li[data-layout='organic'], article[data-testid='result']",
@@ -130,6 +136,88 @@ class DataExtractor:
             return ""
         return urljoin(base_url, href)
 
+    @staticmethod
+    def _resolve_baidu_url(url: str) -> str:
+        """
+        尝试从百度中转链接中提取真实目标 URL
+        - baidu.php?url=... → 广告追踪链接，base64 解码 url 参数
+        - baidu.com/link?url=... → 加密跳转，尝试从片段中提取
+        """
+        if not url or "baidu.com" not in url:
+            return url
+
+        parsed = urlparse(url)
+        params = dict(
+            (k, v[0]) for k, v in
+            __import__("urllib.parse").parse_qs(parsed.query).items()
+        )
+
+        # baidu.php?url=... 中的 url 参数是 hex 或其他编码
+        if "baidu.php" in parsed.path and "url" in params:
+            raw = params["url"]
+            # 尝试 hex 解码
+            try:
+                decoded = bytes.fromhex(raw).decode("utf-8", errors="ignore")
+                # 查找解码后的 URL
+                url_match = re.search(r"https?://[^\s\"'<>]+", decoded)
+                if url_match:
+                    return url_match.group(0).rstrip(")")
+            except (ValueError, UnicodeDecodeError):
+                pass
+            # 尝试 base64
+            try:
+                import base64
+                decoded = base64.b64decode(raw + "==").decode("utf-8", errors="ignore")
+                url_match = re.search(r"https?://[^\s\"'<>]+", decoded)
+                if url_match:
+                    return url_match.group(0).rstrip(")")
+            except Exception:
+                pass
+
+        return url
+
+    @staticmethod
+    def _clean_title(title: str) -> str:
+        """
+        清理标题中的常见噪声
+        - 去除前置的域名/URL 片段（如 csdn.nethttps://...）
+        - 去除末尾面包屑路径（如  › article › details）
+        - 去除 HTML 实体
+        """
+        if not title:
+            return title
+
+        # 去除 HTML 实体
+        import html as html_mod
+        title = html_mod.unescape(title)
+
+        # 去除前置 URL 片段（如 "csdn.nethttps://blog.csdn.net..."）
+        # 模式：以域名开头后面紧跟 http:// 或 https://，一直匹配到空格或面包屑分隔符
+        cleaned = re.sub(
+            r'^[\w.-]+\.[a-z]{2,}(?=https?://)',
+            '',
+            title,
+        )
+
+        # 去除末尾的面包屑路径
+        # 模式：空格+分隔符+词，可重复多次（如 " › article › details"）
+        breadcrumb = r'(?:\s*[›»>]\s*[\w\s\-.#@&?=%!+]+)+$'
+        cleaned = re.sub(breadcrumb, '', cleaned)
+
+        cleaned = cleaned.strip()
+
+        # 如果清理后为空或以 http 开头（说明摘到了 citation 链接），
+        # 尝试提取域名作为回退标签
+        if not cleaned:
+            return title.strip()
+        if cleaned.startswith("http"):
+            parsed = urlparse(cleaned)
+            if parsed.netloc:
+                return parsed.netloc
+            return cleaned
+
+        return cleaned
+
     def extract_text(self, html: str) -> str:
         """从 HTML 中提取页面纯文本"""
         soup = self._make_soup(html)
@@ -179,6 +267,11 @@ class DataExtractor:
         :return: [{"title": "...", "url": "...", "snippet": "..."}, ...]
         """
         soup = self._make_soup(html)
+
+        # 移除干扰元素（cite 面包屑、time 时间戳等）
+        for tag in soup(["cite", "time", "small"]):
+            tag.decompose()
+
         selectors = self.ENGINE_SELECTORS.get(engine_name)
 
         if not selectors:
@@ -194,19 +287,36 @@ class DataExtractor:
         seen_urls = set()
 
         for container in containers:
-            # 提取标题
-            title_tag = container.select_one(selectors["title"])
-            title = self._clean_text(title_tag.get_text()) if title_tag else ""
+            # 提取标题 — 多选器尝试
+            title = ""
+            title_tag = None
+            for ts in selectors["title"].split(", "):
+                title_tag = container.select_one(ts.strip())
+                if title_tag and title_tag.get_text(strip=True):
+                    break
+            if title_tag:
+                title = self._clean_text(title_tag.get_text())
+                # 后清理：去域名前缀
+                title = self._clean_title(title)
 
-            # 提取链接
-            url_tag = container.select_one(selectors["url"])
+            # 提取链接 — 多选器尝试
             url = ""
-            if url_tag and url_tag.get("href"):
-                url = self._resolve_url(url_tag["href"], base_url)
+            for us in selectors["url"].split(", "):
+                url_tag = container.select_one(us.strip())
+                if url_tag and url_tag.get("href"):
+                    url = self._resolve_url(url_tag["href"], base_url)
+                    # 百度链接解析
+                    if "百度" in engine_name:
+                        url = self._resolve_baidu_url(url)
+                    break
 
-            # 提取摘要
-            snippet_tag = container.select_one(selectors["snippet"])
-            snippet = self._clean_text(snippet_tag.get_text()) if snippet_tag else ""
+            # 提取摘要 — 多选器尝试
+            snippet = ""
+            for ss in selectors["snippet"].split(", "):
+                snippet_tag = container.select_one(ss.strip())
+                if snippet_tag:
+                    snippet = self._clean_text(snippet_tag.get_text())
+                    break
 
             # 至少有标题或链接才视为有效结果
             if not title and not url:
@@ -227,6 +337,10 @@ class DataExtractor:
         通用提取方法（无专用选择器时使用）
         提取页面中所有带链接的文本块
         """
+        # 移除干扰元素
+        for tag in soup(["cite", "time", "small", "script", "style", "noscript"]):
+            tag.decompose()
+
         results = []
         seen_urls = set()
 
@@ -246,6 +360,7 @@ class DataExtractor:
             title = DataExtractor._clean_text(a_tag.get_text())
             if not title:
                 title = a_tag.get("title", "") or a_tag.get("aria-label", "")
+            title = DataExtractor._clean_title(title)
 
             # 在同级或父级容器中找摘要文本
             p_tag = tag.find("p") or tag.find("span")
@@ -267,6 +382,7 @@ class DataExtractor:
                     continue
                 seen_urls.add(url)
                 title = DataExtractor._clean_text(a.get_text())
+                title = DataExtractor._clean_title(title)
                 if len(title) < 3:
                     continue
                 results.append({"title": title, "url": url, "snippet": ""})
@@ -317,6 +433,20 @@ class DataExtractor:
 
         return ""
 
+    # 噪声 URL 特征关键词（内网跳转、导航、工具页等）
+    NOISE_URL_PATTERNS: list[str] = [
+        # 搜索引擎自身内网跳转/中转链接
+        "baidu.php?url=",            # 百度广告链接
+        "/search?", "/search/",      # 搜索页面内链
+        "/s?wd=", "/s?keyword=",     # 搜索建议链接
+        # 导航/工具/页脚
+        "/duty/", "/legal", "beian.miit.gov.cn",
+        "/sitemap", "career.", "/jobs",
+        # 社交媒体 profile
+        "/profile/", "/user/", "/users/",
+        "profile.zjurl.cn",         # 头条用户页
+    ]
+
     @staticmethod
     def _is_result_like(item: dict, query: str, score: float) -> bool:
         """
@@ -325,21 +455,68 @@ class DataExtractor:
         """
         title = item.get("title", "")
         snippet = item.get("snippet", "")
+        url = item.get("url", "")
         combined = (title + " " + snippet).lower()
 
         # 过滤条件
         if len(title) < 3:
             return False
 
-        # 排除明显的非结果内容
+        # URL 特征过滤：内网跳转、导航链接
+        if url:
+            for pat in DataExtractor.NOISE_URL_PATTERNS:
+                if pat in url.lower():
+                    # 百度中转链接中的广告类
+                    if "baidu.php?url=" in url.lower():
+                        return False
+                    # profile / user 页
+                    if "profile.zjurl.cn" in url.lower() or "/profile/" in url.lower():
+                        return False
+
+        # 排除明显的非结果内容（扩充版）
         noise_words = [
+            # 翻页/导航
             "下一页", "上一页", "更多", "首页", "登录", "注册", "设置",
+            "第", "页",  # 需要组合判断
+            # 法律/政策
             "关于我们", "联系我们", "隐私政策", "服务条款", "帮助中心",
+            "法律声明", "网站地图", "使用百度前必读",
+            # 企业信息
+            "关于华为", "关于企业业务", "查找中国办事处", "新闻中心",
+            "市场活动", "信任中心", "售前在线咨询", "提交项目需求",
+            "查找经销商", "成为合作伙伴", "合作伙伴培训", "合作伙伴政策",
+            "互动社区", "华为商城", "华为招聘", "华为智能光伏",
+            "版权所有", "粤a2-20044005号",
+            # 站点导航
+            "技术支持", "公告中心", "热搜词条", "近期更新", "全部词条",
+            # 工具/功能链接
+            "应用中心", "在线工具", "添加站点", "添加工具",
+            "小视频", "微头条", "视频",
+            # 英文
             "next", "previous", "home", "login", "sign up", "settings",
             "about us", "contact us", "privacy", "terms of service",
             "copyright", "cookie", "feedback", "report",
         ]
-        if any(nw in combined for nw in noise_words):
+        # 检查单词级别匹配（避免 "第 1 页" 这类）
+        for nw in noise_words:
+            if nw in combined:
+                return False
+
+        # 精确短词排除（只有当 title 完全等于或非常接近时才排除）
+        exact_noise = {
+            "小视频", "微头条", "视频", "百度首页", "华为云",
+            "文心一言", "stackoverflow", "菜鸟教程", "ai studio",
+        }
+        title_lower = title.strip().lower()
+        if title_lower in exact_noise:
+            return False
+
+        # 分页检测：如 "第 1 页", "第2页", "Page 1"
+        if re.search(r"第\s*\d+\s*页", title) or re.search(r"^page\s*\d+$", title_lower):
+            return False
+
+        # ICP 备案号
+        if re.search(r"[a-z]{2}[a-z]?\d{6,}", title_lower):
             return False
 
         # 太短的 snippet 也要有一定相关性
@@ -364,7 +541,8 @@ class DataExtractor:
         soup = self._make_soup(html)
 
         # 移除干扰元素
-        for tag in soup(["script", "style", "noscript", "nav", "footer", "header"]):
+        for tag in soup(["script", "style", "noscript", "nav", "footer", "header",
+                         "cite", "time", "small"]):
             tag.decompose()
 
         # Step 1: 提取所有候选块
@@ -383,6 +561,7 @@ class DataExtractor:
                 continue
 
             title = self._clean_text(a_tag.get_text())
+            title = self._clean_title(title)
             if len(title) < 3:
                 continue
 
@@ -475,6 +654,110 @@ class DataExtractor:
         # 去重后还原为列表
         return list(merged.values())
 
+    # ==================== 提取后过滤 ====================
+
+    def _post_filter_results(
+        self, results: list[dict], engine: str, query: str
+    ) -> list[dict]:
+        """
+        提取后全局过滤：清理标题、解析百度链接、相关性过滤
+        :param results: 合并后的结果列表
+        :param engine: 引擎名称
+        :param query: 搜索关键词
+        :return: 过滤后的结果
+        """
+        if not results:
+            return results
+
+        filtered: list[dict] = []
+        seen_urls: set[str] = set()
+
+        for item in results:
+            # 1. 清理标题
+            item["title"] = self._clean_title(item.get("title", ""))
+
+            # 2. 百度链接解析
+            if "百度" in engine:
+                item["url"] = self._resolve_baidu_url(item.get("url", ""))
+
+            # 3. URL 去重
+            url = item.get("url", "")
+            if url and url in seen_urls:
+                continue
+            if url:
+                seen_urls.add(url)
+
+            # 4. 标题质量检查
+            title = item.get("title", "")
+            if len(title) < 3:
+                continue
+
+            # 5. URL 质量检查
+            if url:
+                # 排除纯站内锚点链接
+                if url.startswith("#") or url.startswith("javascript:"):
+                    continue
+                # 排除百度广告链接（baidu.php）
+                if "baidu.php?url=" in url:
+                    continue
+                # 排除搜索页自身
+                parsed = urlparse(url)
+                low_quality_domains = {
+                    "beian.miit.gov.cn", "profile.zjurl.cn",
+                }
+                if parsed.netloc in low_quality_domains:
+                    continue
+
+            filtered.append(item)
+
+        # 6. 相关性二次过滤（TF-IDF，对非搜索引擎站点更严格）
+        if len(filtered) > 5 and query:
+            filtered = self._filter_by_relevance(filtered, query, engine)
+
+        return filtered
+
+    def _filter_by_relevance(
+        self, results: list[dict], query: str, engine: str
+    ) -> list[dict]:
+        """
+        用 TF-IDF 对结果做相关性二次过滤
+        非主流搜索引擎（如企业内部百科）提高阈值
+        """
+        # 判断是否为主流搜索引擎
+        major_engines = {"百度", "Google", "必应搜索", "DuckDuckGo",
+                         "知乎搜索", "搜狗微信搜索", "头条搜索",
+                         "开发者搜索", "Yandex", "Qwant"}
+        is_major = engine in major_engines
+        # 非主流引擎用更高阈值
+        min_score = 0.02 if is_major else 0.08
+
+        texts = [f"{r.get('title', '')} {r.get('snippet', '')}" for r in results]
+
+        try:
+            vectorizer = TfidfVectorizer(
+                analyzer="char",
+                ngram_range=(2, 4),
+                max_features=800,
+                sublinear_tf=True,
+            )
+            all_vecs = vectorizer.fit_transform([query] + texts)
+            query_vec = all_vecs[0:1]
+            scores = cosine_similarity(query_vec, all_vecs[1:]).flatten()
+        except ValueError:
+            return results
+
+        # 非主流引擎：如果所有结果相关性都极低，整体丢弃
+        if not is_major and np.max(scores) < 0.05:
+            return []
+
+        # 如果结果超过 10 条，过滤掉最低相关性的
+        if len(results) > 10:
+            scored = list(zip(results, scores))
+            scored.sort(key=lambda x: x[1], reverse=True)
+            return [r for r, s in scored if s >= min_score][:50]
+
+        return [r for r, s in zip(results, scores) if s >= min_score]
+
     # ==================== 批量处理 ====================
 
     def process_all(self) -> list[dict]:
@@ -523,6 +806,11 @@ class DataExtractor:
 
                 # 双路合并
                 merged_results = self._merge_dual_results(bs4_results, sklearn_results)
+
+                # 提取后全局过滤（清理标题、解析链接、相关性过滤）
+                merged_results = self._post_filter_results(
+                    merged_results, engine, query
+                )
 
                 self.extracted_data.append({
                     "engine": engine,

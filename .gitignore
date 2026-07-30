@@ -184,3 +184,4 @@ cython_debug/
 .idea/
 results/
 *.plan
+test*.py
