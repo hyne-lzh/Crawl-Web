@@ -49,6 +49,7 @@ Crawl Web/
 ```bash
 python windows_setup_install_cn.py
 ```
+>目前暂未提供其他系统的
 
 **macOS：**
 
@@ -72,6 +73,8 @@ playwright install chromium
 ```
 
 > Linux 用户如遇 Chromium 依赖缺失，运行：`playwright install --with-deps chromium`
+>
+> 国内Windows用户可设置镜像加速：`set PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright`
 
 ### 3. 运行
 
