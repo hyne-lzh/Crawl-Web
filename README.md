@@ -49,7 +49,6 @@ Crawl Web/
 ```bash
 python windows_setup_install_cn.py
 ```
->目前暂未提供其他系统的
 
 **macOS：**
 
