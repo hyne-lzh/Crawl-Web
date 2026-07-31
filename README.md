@@ -73,7 +73,7 @@ playwright install chromium
 
 > Linux 用户如遇 Chromium 依赖缺失，运行：`playwright install --with-deps chromium`
 >
-> 国内Windows用户可设置镜像加速：`set PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright`
+> 国内用户可设置环境变量镜像加速：PLAYWRIGHT_DOWNLOAD_HOST 则个环境变量的值为 https://npmmirror.com/mirrors/playwright
 
 ### 3. 运行
 
