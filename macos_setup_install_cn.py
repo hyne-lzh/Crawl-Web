@@ -1,5 +1,5 @@
-"""Windows 一键安装脚本（国内镜像加速）
-用法: python windows_setup_install_cn.py
+"""macOS 一键安装脚本（国内镜像加速）
+用法: python macos_setup_install_cn.py
 """
 import os
 import subprocess
@@ -13,7 +13,7 @@ def run(cmd: str, **kwargs) -> int:
 
 def main():
     print("=" * 48)
-    print("  搜索引擎聚合爬虫 — Windows 环境安装")
+    print("  搜索引擎聚合爬虫 — macOS 环境安装")
     print("=" * 48)
 
     os.environ["PLAYWRIGHT_DOWNLOAD_HOST"] = MIRROR
