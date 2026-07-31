@@ -320,7 +320,7 @@ class WebCrawler:
 
                     progress.update(
                         task,
-                        description=f"[cyan][{speed}/10] {name[:30]}[/cyan]",
+                        description=f"[cyan]{name[:30]} [dim](speed={speed})[/dim][/cyan]",
                     )
 
                     result = await self.crawl_single(engine, query, page)

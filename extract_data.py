@@ -6,7 +6,7 @@ extract_data.py — 数据提取模块
 """
 
 import re
-from urllib.parse import urljoin, urlparse
+from urllib.parse import parse_qs, urljoin, urlparse
 
 from bs4 import BeautifulSoup, Tag
 import numpy as np
@@ -147,10 +147,7 @@ class DataExtractor:
             return url
 
         parsed = urlparse(url)
-        params = dict(
-            (k, v[0]) for k, v in
-            __import__("urllib.parse").parse_qs(parsed.query).items()
-        )
+        params = {k: v[0] for k, v in parse_qs(parsed.query).items()}
 
         # baidu.php?url=... 中的 url 参数是 hex 或其他编码
         if "baidu.php" in parsed.path and "url" in params:
