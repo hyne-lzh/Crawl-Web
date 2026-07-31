@@ -29,15 +29,10 @@ from wash_data import DataWasher
 class WebCrawler:
     """搜索引擎爬虫 — 从 webs.json 加载引擎配置并进行爬取"""
 
-    # ============ 引擎名称标准化 ============
-    # webs.json 中的名称 -> extract_data.py 中的名称
-    ENGINE_NAME_MAP: dict[str, str] = {
-        "百度 (Baidu)":            "百度",
-        "必应搜索 (Bing)":         "必应搜索",
-        "MCP (Model Context Protocol)": "MCP",
-    }
+    # ============ 引擎名称标准化（新 webs.json 已直接使用标准名，保留映射以防旧格式）============
+    ENGINE_NAME_MAP: dict[str, str] = {}
 
-    # ============ 搜索 URL 模板（按标准化名称） ============
+    # ============ 搜索 URL 模板（兼容旧格式 webs.json 的兜底映射）============
     SEARCH_URLS: dict[str, str] = {
         "Google":              "https://www.google.com/search?q={query}&hl=zh-CN",
         "百度":                "https://www.baidu.com/s?wd={query}",
@@ -77,14 +72,41 @@ class WebCrawler:
         "华为IP知识百科":       "https://info.support.huawei.com/info-finder/encyclopedia/zh/search?keyword={query}",
         "LibreStock":          "https://librestock.com/search/?q={query}",
         "SimilarWeb":          "https://www.similarweb.com/search?q={query}",
+        "Brave Search":        "https://search.brave.com/search?q={query}",
+        "Mojeek":              "https://www.mojeek.com/search?q={query}",
+        "Ecosia":              "https://www.ecosia.org/search?q={query}",
+        "Yahoo搜索":            "https://search.yahoo.com/search?p={query}",
+        "搜狗全网搜索":         "https://sogou.com/web?query={query}",
+        "360搜索":             "https://www.so.com/s?q={query}",
+        "多吉搜索":             "https://www.dogedoge.com/s?q={query}",
+        "Google学术搜索":       "https://scholar.google.com/scholar?q={query}&hl=zh-CN",
+        "arXiv预印本":          "https://arxiv.org/search/?query={query}",
+        "AMiner学术":           "https://www.aminer.cn/search/pub?t={query}",
+        "鸠摩搜书":             "https://www.jiumodiary.com/s/{query}",
+        "Stack Overflow":      "https://stackoverflow.com/search?q={query}",
+        "HuggingFace模型搜索":  "https://huggingface.co/search/full-text?q={query}",
+        "Pixabay图库":          "https://pixabay.com/images/search/{query}/",
+        "Flickr图片搜索":        "https://www.flickr.com/search/?text={query}",
+        "百度百科":             "https://baike.baidu.com/search/word?word={query}",
+        "中文维基百科":         "https://zh.wikipedia.org/w/index.php?search={query}",
+        "B站搜索":              "https://search.bilibili.com/all?keyword={query}",
+        "IMDb影视搜索":          "https://www.imdb.com/find?q={query}",
+        "Wolfram Alpha":       "https://www.wolframalpha.com/input?i={query}",
+        "Urban Dictionary":    "https://www.urbandictionary.com/define.php?term={query}",
+        "Bandcamp音乐":         "https://bandcamp.com/search?q={query}",
+        "Wayback Machine存档检索": "https://web.archive.org/web/*/{query}",
+        "Reddit搜索":           "https://www.reddit.com/search/?q={query}",
+        "CNKI研学平台":          "https://x.cnki.net/search/searchresult?kw={query}",
+        "GitLab搜索":           "https://gitlab.com/search?search={query}",
+        "Google图片搜索":        "https://images.google.com/search?q={query}&hl=zh-CN",
+        "百度图片":             "https://image.baidu.com/search/index?tn=baiduimage&word={query}",
+        "必应图片":             "https://cn.bing.com/images/search?q={query}",
+        "The Free Dictionary":  "https://encyclopedia.thefreedictionary.com/{query}",
+        "CNKI外文文献":          "https://kns.cnki.net/kcms/detail/search.aspx?dbcode=WJDC&v={query}",
     }
 
-    # 纯导航/工具类网站，不适合搜索（直接访问首页即可）
-    SKIP_ENGINES: set[str] = {
-        "The App Store", "trace.moe", "Windy",
-        "Starship",
-        "网站历史快照 (Wayback Machine)", "MCP",
-    }
+    # 不适合文本搜索的站点（新版 webs.json 已剔除大部分，保留兜底）
+    SKIP_ENGINES: set[str] = set()
 
     def __init__(self, config_path: str = "webs.json"):
         self.config_path = Path(config_path)
@@ -102,29 +124,51 @@ class WebCrawler:
     def _build_search_url(self, engine: dict, query: str) -> str | None:
         """
         为给定引擎构建搜索 URL
+        新版 webs.json 中 url 已包含 {query} 占位符，直接替换即可
         :return: 搜索 URL，若无法搜索返回 None
         """
         norm_name = self._normalize_name(engine["name"])
+        raw_url = engine.get("url", "")
 
         # 需要跳过的站点
         if norm_name in self.SKIP_ENGINES:
             return None
 
-        # 已知搜索模板
+        # 新格式：URL 已包含 {query}，直接替换
+        if "{query}" in raw_url:
+            return raw_url.replace("{query}", quote(query))
+
+        # 兼容旧格式：通过 SEARCH_URLS 字典查找
         if norm_name in self.SEARCH_URLS:
             return self.SEARCH_URLS[norm_name].format(query=quote(query))
 
-        # 未收录的站点：尝试通用搜索路径
-        base = engine["url"].rstrip("/")
+        # 最后兜底：尝试通用搜索路径
+        base = raw_url.rstrip("/")
         return f"{base}/search?q={quote(query)}"
 
     # ==================== 加载配置 ====================
 
     def load_engines(self) -> list[dict]:
-        """从 webs.json 加载搜索引擎列表"""
+        """
+        从 webs.json 加载搜索引擎列表
+        新版格式为 {名称: {url, speed}} 字典，自动转为内部列表格式
+        """
         try:
             with open(self.config_path, "r", encoding="utf-8") as f:
-                self.engines = json.load(f)
+                raw = json.load(f)
+
+            if isinstance(raw, list):
+                # 旧版数组格式兼容
+                self.engines = raw
+            elif isinstance(raw, dict):
+                # 新版字典格式：{名称: {url, speed}}
+                self.engines = [
+                    {"name": name, "url": cfg.get("url", ""), "speed": cfg.get("speed", 5)}
+                    for name, cfg in raw.items()
+                ]
+            else:
+                self.engines = []
+
             self.console.print(
                 f"  [green][OK][/green] 已加载 [cyan]{len(self.engines)}[/cyan] 个网站"
             )

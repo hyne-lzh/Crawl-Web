@@ -1,46 +1,274 @@
-[
-  { "name": "Google", "url": "https://www.google.com/", "speed": 2 },
-  { "name": "百度 (Baidu)", "url": "https://www.baidu.com/", "speed": 10 },
-  { "name": "DuckDuckGo", "url": "https://duckduckgo.com/", "speed": 3 },
-  { "name": "Github", "url": "https://github.com/", "speed": 4 },
-  { "name": "Iconfinder", "url": "https://www.iconfinder.com/", "speed": 7 },
-  { "name": "必应搜索 (Bing)", "url": "https://cn.bing.com/", "speed": 8 },
-  { "name": "头条搜索", "url": "https://www.toutiao.com/", "speed": 10 },
-  { "name": "SimilarSites", "url": "https://www.similarsites.com/", "speed": 7 },
-  { "name": "CC Search", "url": "https://search.creativecommons.org/", "speed": 6 },
-  { "name": "Pexels", "url": "https://www.pexels.com/", "speed": 7 },
-  { "name": "Unsplash", "url": "https://unsplash.com/", "speed": 7 },
-  { "name": "知乎搜索", "url": "https://www.zhihu.com/", "speed": 10 },
-  { "name": "SimilarWeb", "url": "https://www.similarweb.com/", "speed": 7 },
-  { "name": "TinEye", "url": "https://tineye.com/", "speed": 6 },
-  { "name": "开发者搜索", "url": "https://kaifa.baidu.com/", "speed": 10 },
-  { "name": "Semantic Scholar", "url": "https://www.semanticscholar.org/", "speed": 6 },
-  { "name": "WikiHow", "url": "https://www.wikihow.com/", "speed": 7 },
-  { "name": "知网", "url": "https://www.cnki.net/", "speed": 9 },
-  { "name": "Yandex", "url": "https://yandex.com/", "speed": 5 },
-  { "name": "LibreStock", "url": "https://librestock.com/", "speed": 6 },
-  { "name": "The App Store", "url": "https://apps.apple.com/", "speed": 7 },
-  { "name": "Google 图书搜索", "url": "https://books.google.com/", "speed": 2 },
-  { "name": "网站历史快照 (Wayback Machine)", "url": "https://web.archive.org/", "speed": 5 },
-  { "name": "Ebooke", "url": "https://ebookee.com/", "speed": 6 },
-  { "name": "FindIcons", "url": "https://findicons.com/", "speed": 7 },
-  { "name": "Wikipedia", "url": "https://www.wikipedia.org/", "speed": 5 },
-  { "name": "Tunefind", "url": "https://www.tunefind.com/", "speed": 6 },
-  { "name": "trace.moe", "url": "https://trace.moe/", "speed": 6 },
-  { "name": "Qwant", "url": "https://www.qwant.com/", "speed": 5 },
-  { "name": "Perplexity", "url": "https://www.perplexity.ai/", "speed": 4 },
-  { "name": "ProSettings", "url": "https://prosettings.net/", "speed": 7 },
-  { "name": "搜狗微信搜索", "url": "https://weixin.sogou.com/", "speed": 10 },
-  { "name": "Windy", "url": "https://www.windy.com/", "speed": 6 },
-  { "name": "全历史", "url": "https://www.allhistory.com/", "speed": 9 },
-  { "name": "The Pudding", "url": "https://pudding.cool/", "speed": 6 },
-  { "name": "Stanford Encyclopedia of Philosophy", "url": "https://plato.stanford.edu/", "speed": 7 },
-  { "name": "WordHippo", "url": "https://www.wordhippo.com/", "speed": 7 },
-  { "name": "visualcapitalist", "url": "https://www.visualcapitalist.com/", "speed": 7 },
-  { "name": "TOP 500", "url": "https://www.top500.org/", "speed": 7 },
-  { "name": "Starship", "url": "https://starship.rs/", "speed": 6 },
-  { "name": "BetaWiki", "url": "https://betawiki.net/", "speed": 6 },
-  { "name": "华为IP知识百科", "url": "https://info.support.huawei.com/info-finder/encyclopedia/zh/index.html", "speed": 10 },
-  { "name": "YOU", "url": "https://you.com/", "speed": 4 },
-  { "name": "MCP (Model Context Protocol)", "url": "https://modelcontextprotocol.io/", "speed": 5 }
-]
+{
+    "Google": {
+        "url": "https://www.google.com/search?q={query}&hl=zh-CN",
+        "speed": 1
+    },
+    "百度": {
+        "url": "https://www.baidu.com/s?wd={query}",
+        "speed": 10
+    },
+    "DuckDuckGo": {
+        "url": "https://duckduckgo.com/?q={query}&ia=web",
+        "speed": 3
+    },
+    "必应搜索": {
+        "url": "https://cn.bing.com/search?q={query}",
+        "speed": 8
+    },
+    "知乎搜索": {
+        "url": "https://www.zhihu.com/search?type=content&q={query}",
+        "speed": 9
+    },
+    "Yandex": {
+        "url": "https://yandex.com/search/?text={query}",
+        "speed": 4
+    },
+    "Qwant": {
+        "url": "https://www.qwant.com/?q={query}",
+        "speed": 3
+    },
+    "搜狗微信搜索": {
+        "url": "https://weixin.sogou.com/weixin?type=2&query={query}",
+        "speed": 9
+    },
+    "头条搜索": {
+        "url": "https://so.toutiao.com/search?keyword={query}",
+        "speed": 9
+    },
+    "开发者搜索": {
+        "url": "https://kaifa.baidu.com/search?wd={query}",
+        "speed": 10
+    },
+    "YOU": {
+        "url": "https://you.com/search?q={query}",
+        "speed": 2
+    },
+    "Perplexity": {
+        "url": "https://www.perplexity.ai/search?q={query}",
+        "speed": 2
+    },
+    "Google 图书搜索": {
+        "url": "https://books.google.com/books?q={query}",
+        "speed": 1
+    },
+    "Semantic Scholar": {
+        "url": "https://www.semanticscholar.org/search?q={query}",
+        "speed": 2
+    },
+    "Ebooke": {
+        "url": "https://ebookee.com/?s={query}",
+        "speed": 3
+    },
+    "Wikipedia": {
+        "url": "https://en.wikipedia.org/w/index.php?search={query}",
+        "speed": 1
+    },
+    "WikiHow": {
+        "url": "https://www.wikihow.com/wikiHowTo?search={query}",
+        "speed": 2
+    },
+    "CC Search": {
+        "url": "https://search.creativecommons.org/search?q={query}",
+        "speed": 3
+    },
+    "知网": {
+        "url": "https://kns.cnki.net/kns8s/defaultresult/index?kwd={query}",
+        "speed": 9
+    },
+    "WordHippo": {
+        "url": "https://www.wordhippo.com/what-is/search?q={query}",
+        "speed": 3
+    },
+    "TinEye": {
+        "url": "https://tineye.com/search?url={query}",
+        "speed": 3
+    },
+    "全历史": {
+        "url": "https://www.allhistory.com/search?q={query}",
+        "speed": 9
+    },
+    "FindIcons": {
+        "url": "https://findicons.com/search/{query}",
+        "speed": 4
+    },
+    "Iconfinder": {
+        "url": "https://www.iconfinder.com/search?q={query}",
+        "speed": 3
+    },
+    "Github": {
+        "url": "https://github.com/search?q={query}",
+        "speed": 3
+    },
+    "Stanford Encyclopedia of Philosophy": {
+        "url": "https://plato.stanford.edu/search/search?query={query}",
+        "speed": 2
+    },
+    "Unsplash": {
+        "url": "https://unsplash.com/s/photos/{query}",
+        "speed": 2
+    },
+    "Pexels": {
+        "url": "https://www.pexels.com/search/{query}/",
+        "speed": 3
+    },
+    "Tunefind": {
+        "url": "https://www.tunefind.com/search?q={query}",
+        "speed": 3
+    },
+    "visualcapitalist": {
+        "url": "https://www.visualcapitalist.com/?s={query}",
+        "speed": 3
+    },
+    "ProSettings": {
+        "url": "https://prosettings.net/?s={query}",
+        "speed": 4
+    },
+    "BetaWiki": {
+        "url": "https://betawiki.net/index.php?search={query}",
+        "speed": 4
+    },
+    "TOP 500": {
+        "url": "https://www.top500.org/search/?q={query}",
+        "speed": 3
+    },
+    "The Pudding": {
+        "url": "https://pudding.cool/?s={query}",
+        "speed": 3
+    },
+    "华为IP知识百科": {
+        "url": "https://info.support.huawei.com/info-finder/encyclopedia/zh/search?keyword={query}",
+        "speed": 9
+    },
+    "LibreStock": {
+        "url": "https://librestock.com/search/?q={query}",
+        "speed": 3
+    },
+    "SimilarWeb": {
+        "url": "https://www.similarweb.com/search?q={query}",
+        "speed": 3
+    },
+    "Brave Search": {
+        "url": "https://search.brave.com/search?q={query}",
+        "speed": 6
+    },
+    "Mojeek": {
+        "url": "https://www.mojeek.com/search?q={query}",
+        "speed": 5
+    },
+    "Ecosia": {
+        "url": "https://www.ecosia.org/search?q={query}",
+        "speed": 5
+    },
+    "Yahoo搜索": {
+        "url": "https://search.yahoo.com/search?p={query}",
+        "speed": 5
+    },
+    "搜狗全网搜索": {
+        "url": "https://sogou.com/web?query={query}",
+        "speed": 9
+    },
+    "360搜索": {
+        "url": "https://www.so.com/s?q={query}",
+        "speed": 9
+    },
+    "多吉搜索": {
+        "url": "https://www.dogedoge.com/s?q={query}",
+        "speed": 7
+    },
+    "Google学术搜索": {
+        "url": "https://scholar.google.com/scholar?q={query}&hl=zh-CN",
+        "speed": 1
+    },
+    "arXiv预印本": {
+        "url": "https://arxiv.org/search/?query={query}",
+        "speed": 2
+    },
+    "AMiner学术": {
+        "url": "https://www.aminer.cn/search/pub?t={query}",
+        "speed": 8
+    },
+    "鸠摩搜书": {
+        "url": "https://www.jiumodiary.com/s/{query}",
+        "speed": 8
+    },
+    "Stack Overflow": {
+        "url": "https://stackoverflow.com/search?q={query}",
+        "speed": 4
+    },
+    "HuggingFace模型搜索": {
+        "url": "https://huggingface.co/search/full-text?q={query}",
+        "speed": 4
+    },
+    "Pixabay图库": {
+        "url": "https://pixabay.com/images/search/{query}/",
+        "speed": 4
+    },
+    "Flickr图片搜索": {
+        "url": "https://www.flickr.com/search/?text={query}",
+        "speed": 2
+    },
+    "百度百科": {
+        "url": "https://baike.baidu.com/search/word?word={query}",
+        "speed": 10
+    },
+    "中文维基百科": {
+        "url": "https://zh.wikipedia.org/w/index.php?search={query}",
+        "speed": 6
+    },
+    "B站搜索": {
+        "url": "https://search.bilibili.com/all?keyword={query}",
+        "speed": 10
+    },
+    "IMDb影视搜索": {
+        "url": "https://www.imdb.com/find?q={query}",
+        "speed": 3
+    },
+    "Wolfram Alpha": {
+        "url": "https://www.wolframalpha.com/input?i={query}",
+        "speed": 3
+    },
+    "Urban Dictionary": {
+        "url": "https://www.urbandictionary.com/define.php?term={query}",
+        "speed": 3
+    },
+    "Bandcamp音乐": {
+        "url": "https://bandcamp.com/search?q={query}",
+        "speed": 3
+    },
+    "Wayback Machine存档检索": {
+        "url": "https://web.archive.org/web/*/{query}",
+        "speed": 2
+    },
+    "Reddit搜索": {
+        "url": "https://www.reddit.com/search/?q={query}",
+        "speed": 2
+    },
+    "CNKI研学平台": {
+        "url": "https://x.cnki.net/search/searchresult?kw={query}",
+        "speed": 9
+    },
+    "GitLab搜索": {
+        "url": "https://gitlab.com/search?search={query}",
+        "speed": 3
+    },
+    "Google图片搜索": {
+        "url": "https://images.google.com/search?q={query}&hl=zh-CN",
+        "speed": 1
+    },
+    "百度图片": {
+        "url": "https://image.baidu.com/search/index?tn=baiduimage&word={query}",
+        "speed": 10
+    },
+    "必应图片": {
+        "url": "https://cn.bing.com/images/search?q={query}",
+        "speed": 8
+    },
+    "The Free Dictionary": {
+        "url": "https://encyclopedia.thefreedictionary.com/{query}",
+        "speed": 3
+    },
+    "CNKI外文文献": {
+        "url": "https://kns.cnki.net/kcms/detail/search.aspx?dbcode=WJDC&v={query}",
+        "speed": 9
+    }
+}
