@@ -1,0 +1,182 @@
+{
+    "Google": {
+        "url": "https://www.google.com/search?q={query}&hl=en",
+        "speed": 9
+    },
+    "Bing": {
+        "url": "https://www.bing.com/search?q={query}",
+        "speed": 10
+    },
+    "Yahoo": {
+        "url": "https://search.yahoo.com/search?p={query}",
+        "speed": 8
+    },
+    "DuckDuckGo": {
+        "url": "https://duckduckgo.com/?q={query}&ia=web",
+        "speed": 9
+    },
+    "Brave Search": {
+        "url": "https://search.brave.com/search?q={query}",
+        "speed": 9
+    },
+    "Ecosia": {
+        "url": "https://www.ecosia.org/search?q={query}",
+        "speed": 8
+    },
+    "Startpage": {
+        "url": "https://www.startpage.com/sp/search?q={query}",
+        "speed": 8
+    },
+    "Mojeek": {
+        "url": "https://www.mojeek.com/search?q={query}",
+        "speed": 7
+    },
+    "Swisscows": {
+        "url": "https://swisscows.com/web?query={query}",
+        "speed": 7
+    },
+    "Yep.com": {
+        "url": "https://yep.com/web?q={query}",
+        "speed": 6
+    },
+    "Kagi": {
+        "url": "https://kagi.com/search?q={query}",
+        "speed": 7
+    },
+    "KARMA Search": {
+        "url": "https://karmasearch.io/search?q={query}",
+        "speed": 5
+    },
+    "ChatGPT Search": {
+        "url": "https://chatgpt.com/search?q={query}",
+        "speed": 6
+    },
+    "Google AI Mode": {
+        "url": "https://www.google.com/search?q={query}&udm=14",
+        "speed": 6
+    },
+    "Perplexity.ai": {
+        "url": "https://www.perplexity.ai/search?q={query}",
+        "speed": 7
+    },
+    "You.com": {
+        "url": "https://you.com/search?q={query}",
+        "speed": 7
+    },
+    "Yandex": {
+        "url": "https://yandex.com/search/?text={query}",
+        "speed": 6
+    },
+    "Baidu": {
+        "url": "https://www.baidu.com/s?wd={query}",
+        "speed": 4
+    },
+    "Sogou": {
+        "url": "https://sogou.com/web?query={query}",
+        "speed": 4
+    },
+    "Naver": {
+        "url": "https://search.naver.com/search.naver?query={query}",
+        "speed": 6
+    },
+    "Openverse": {
+        "url": "https://openverse.org/search/?q={query}",
+        "speed": 5
+    },
+    "X (Twitter)": {
+        "url": "https://x.com/search?q={query}",
+        "speed": 4
+    },
+    "SlideShare": {
+        "url": "https://www.slideshare.net/search/slideshow?q={query}",
+        "speed": 5
+    },
+    "Wayback Machine": {
+        "url": "https://web.archive.org/web/*/{query}",
+        "speed": 3
+    },
+    "WolframAlpha": {
+        "url": "https://www.wolframalpha.com/input?i={query}",
+        "speed": 6
+    },
+    "LinkedIn": {
+        "url": "https://www.linkedin.com/search/results/all/?keywords={query}",
+        "speed": 4
+    },
+    "Wikipedia": {
+        "url": "https://en.wikipedia.org/w/index.php?search={query}",
+        "speed": 8
+    },
+    "Stack Overflow": {
+        "url": "https://stackoverflow.com/search?q={query}",
+        "speed": 7
+    },
+    "Github": {
+        "url": "https://github.com/search?q={query}",
+        "speed": 7
+    },
+    "Reddit": {
+        "url": "https://www.reddit.com/search/?q={query}",
+        "speed": 6
+    },
+    "Semantic Scholar": {
+        "url": "https://www.semanticscholar.org/search?q={query}",
+        "speed": 5
+    },
+    "ArXiv": {
+        "url": "https://arxiv.org/search/?query={query}",
+        "speed": 5
+    },
+    "Google Scholar": {
+        "url": "https://scholar.google.com/scholar?q={query}&hl=en",
+        "speed": 5
+    },
+    "IMDb": {
+        "url": "https://www.imdb.com/find?q={query}",
+        "speed": 5
+    },
+    "Unsplash": {
+        "url": "https://unsplash.com/s/photos/{query}",
+        "speed": 5
+    },
+    "Pexels": {
+        "url": "https://www.pexels.com/search/{query}/",
+        "speed": 5
+    },
+    "Urban Dictionary": {
+        "url": "https://www.urbandictionary.com/define.php?term={query}",
+        "speed": 5
+    },
+    "Wolfram Alpha": {
+        "url": "https://www.wolframalpha.com/input?i={query}",
+        "speed": 6
+    },
+    "The Free Dictionary": {
+        "url": "https://encyclopedia.thefreedictionary.com/{query}",
+        "speed": 5
+    },
+    "WordHippo": {
+        "url": "https://www.wordhippo.com/what-is/search?q={query}",
+        "speed": 5
+    },
+    "WikiHow": {
+        "url": "https://www.wikihow.com/wikiHowTo?search={query}",
+        "speed": 5
+    },
+    "SimilarWeb": {
+        "url": "https://www.similarweb.com/search?q={query}",
+        "speed": 4
+    },
+    "LibreStock": {
+        "url": "https://librestock.com/search/?q={query}",
+        "speed": 4
+    },
+    "FindIcons": {
+        "url": "https://findicons.com/search/{query}",
+        "speed": 4
+    },
+    "Iconfinder": {
+        "url": "https://www.iconfinder.com/search?q={query}",
+        "speed": 4
+    }
+}
