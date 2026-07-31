@@ -366,9 +366,10 @@ class DataWasher:
                 title = item.get("title", "无标题")
                 url = item.get("url", "")
                 snippet = item.get("snippet", "")
-                # 截断过长摘要
-                if len(snippet) > 100:
-                    snippet = snippet[:100] + "..."
+                # 终端表格仅用于预览，过长摘要做轻度截断避免行高失控；
+                # JSON/CSV 中仍保存完整原文。
+                if len(snippet) > 800:
+                    snippet = snippet[:800] + "..."
 
                 table.add_row(
                     str(i),
