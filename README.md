@@ -26,7 +26,6 @@ Crawl Web/
 ├── webs.json                    # 搜索引擎配置文件（69 个引擎）
 ├── windows_setup_install_cn.py  # Windows 一键安装脚本
 ├── requirements.txt             # Python 依赖
-├── do.plan                      # 配置文件更新计划
 └── results/                     # 输出目录（JSON + CSV）
 ```
 
@@ -52,7 +51,7 @@ pip install -r requirements.txt
 playwright install chromium
 ```
 
-> 国内用户可设置镜像加速：`set PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright`
+> 国内Windows用户可设置镜像加速：`set PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright`
 
 ### 3. 运行
 
