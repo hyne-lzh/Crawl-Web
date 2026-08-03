@@ -22,7 +22,7 @@ from rich.table import Table
 from rich.rule import Rule
 from rich import box
 
-from extract_data import DataExtractor
+from English.extract_data import DataExtractor
 from wash_data import DataWasher
 
 

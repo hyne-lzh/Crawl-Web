@@ -8,19 +8,17 @@ import asyncio
 import json
 from pathlib import Path
 from urllib.parse import quote
-from datetime import datetime
 
 from playwright.async_api import async_playwright, Browser, Page
-
+from rich import box
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import (
     Progress, SpinnerColumn, BarColumn, TextColumn,
     TimeElapsedColumn, MofNCompleteColumn,
 )
-from rich.table import Table
 from rich.rule import Rule
-from rich import box
+from rich.table import Table
 
 from extract_data import DataExtractor
 from wash_data import DataWasher
