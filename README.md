@@ -3,7 +3,7 @@
 一键对 **69+ 个搜索引擎** 同时发起搜索，自动提取、清洗、去重、排序，最终输出 JSON + CSV 结果。
 
 [![English](https://img.shields.io/badge/Language-English-blue)](https://github.com/hyne-lzh/Crawl-Web/blob/main/English/README.md)
-[![English](https://img.shields.io/badge/License-MIT-red)]
+[![English](https://img.shields.io/badge/License-MIT-red)](https://github.com/hyne-lzh/Crawl-Web/tree/main#license)
 
 ## 工作流程
 
